@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class script_PolygonGenerator : MonoBehaviour 
@@ -11,11 +12,10 @@ public class script_PolygonGenerator : MonoBehaviour
     public  List<Vector2> newUV          = new List<Vector2>();                     // The UV list is unimportant right now but it tells Unity how the texture is aligned on each polygon
 
     private Mesh          mesh;                                                     // A mesh is made up of the vertices, triangles and UVs we are going to define, after we make them up we'll save them as this mesh
-    private float         tUnit          = 0.25f;                                   // tUnit is the fraction of space 1 tile takes up out of the width of the texture. ## In this case it's 1/4 or 0.25 ## 
-    private Vector2       tStone         = new Vector2( 3, 2 );                     // The coordinates for textures
-    private Vector2       tDirt          = new Vector2( 1, 1 );
-    private Vector2       tSand          = new Vector2( 0, 1 );
-    private Vector2       tGrass         = new Vector2( 2, 1 );
+    private float         tUnit          = 0.125f;                                   // tUnit is the fraction of space 1 tile takes up out of the width of the texture. ## In this case it's 1/4 or 0.25 ## 
+
+    public  Texture       tDirt;
+    public  Texture       tStone;
 
     private int           squareCount;
     public byte[,]        blocks;                                                   // A 2d array to store block information so add a 2d byte array 
@@ -47,9 +47,9 @@ public class script_PolygonGenerator : MonoBehaviour
             update = false;
         }
         
-        GenTerrain();
-        BuildMesh();
-        UpdateMesh();
+        //GenTerrain();
+        //BuildMesh();
+        //UpdateMesh();
         
     }
 
@@ -65,31 +65,44 @@ public class script_PolygonGenerator : MonoBehaviour
                 {
                     GenCollider( px, py );                                          // GenCollider here, this will apply it to every block other than air
 
-                    if      ( blocks[ px, py ] == 1 )       // 1 = Stone
-                    {
-                        GenSquare( px, py, tStone );   
-                    }
-                    else if ( blocks[ px, py ] == 2 )       // 2 = Dirt
-                    {
-                        GenSquare( px, py, tDirt );     
-                    }
-                    else if ( blocks[ px, py ] == 3 )       // 3 = Grass 
-                    {
-                        GenSquare( px, py, tGrass );  
-                    }
-                    else if ( blocks[ px, py ] == 4 )       // 4 = Sand
-                    {
-                        GenSquare( px, py, tSand  );  
-                    }
+                    GenerateBlocks( px, py );
                 }
             }
         }
     }
     #endregion
 
+    void GenerateBlocks(int px, int py)
+    {
+        switch ( blocks[ px, py ] )
+        { 
+            case 1:
+                BlockOfType( tStone, px, py );
+                break;
+
+            case 2:
+                BlockOfType( tDirt, px, py );
+                break;
+            
+            case 3:
+                BlockOfType( tDirt, px, py );  
+                break;
+
+            case 4:
+                BlockOfType( tDirt, px, py );  
+                break;
+
+            default:
+                Debug.Log("No block of that type...");
+                break;
+        }
+    }
+
+    #region variables
     // Grass
     public float grass_scale    = 2;
     public float grass_mag      = 2.5f;
+    
     // Dirt
     public float dirt_01_scale  = 100;
     public float dirt_01_mag    = 35;
@@ -100,31 +113,6 @@ public class script_PolygonGenerator : MonoBehaviour
     public float dirt_02_exp    = 1;
 
     public int   dirt_height    = 75;
-    // Stone
-    public float stone_01_scale = 80;
-    public float stone_01_mag   = 15;
-    public float stone_01_exp   = 1;
-
-    public float stone_02_scale = 50;
-    public float stone_02_mag   = 30;
-    public float stone_02_exp   = 1;
-
-    public float stone_03_scale = 10;
-    public float stone_03_mag   = 10;
-    public float stone_03_exp   = 1;
-
-    public int   stone_height   = 75;
-
-    // Sand
-    public float sand_01_scale  = 60;
-    public float sand_01_mag    = 10;
-    public float sand_01_exp    = 1;
-
-    public float sand_02_scale  = 30;
-    public float sand_02_mag    = 15;
-    public float sand_02_exp    = 1;
-
-    public int   sand_height    = 75;
 
     // Spots
     public int   spotSize       = 10;
@@ -145,7 +133,7 @@ public class script_PolygonGenerator : MonoBehaviour
     public int   spot_caveScale = 16;
     public int   spot_caveMag   = 14;
     public int   spot_caveExp   = 1;
-
+    #endregion
 
     #region function GenTerrain
     void GenTerrain()                                                                                               // This makes blocks a 10x10 array then goes through each block making any block with a y less that 5 into rock and the row at 5 into grass.
@@ -173,24 +161,15 @@ public class script_PolygonGenerator : MonoBehaviour
                which gives us rolling hills with little noise. Again we add 75 to raise it up.
             */
             #endregion 
-
-            int stone  = Noise( px, 0, stone_01_scale, stone_01_mag, stone_01_exp );                                //  [Layer 1] 
-                stone += Noise( px, 0, stone_02_scale, stone_02_mag, stone_02_exp );                                //  [Layer 2]
-                stone += Noise( px, 0, stone_03_scale, stone_03_mag, stone_03_exp );                                //  [Layer 3] 
-                stone += stone_height;                                                                              // Lastly we add 75 to the stone to raise it up.
-
-            int dirt   = Noise( px, 0, dirt_01_scale, dirt_01_mag, dirt_01_exp );
-                dirt  += Noise( px, 0, dirt_02_scale, dirt_02_mag, dirt_02_exp );
-                dirt  += dirt_height;
+ 
+            int dirt   = Noise( px, 0, dirt_01_scale, dirt_01_mag, dirt_01_exp );                                   //  [Layer 1] 
+                dirt  += Noise( px, 0, dirt_02_scale, dirt_02_mag, dirt_02_exp );                                   //  [Layer 2]
+                dirt  += dirt_height;                                                                               // Lastly we add 75 to the stone to raise it up.
 
             int grass  = Noise( px, 0, dirt_01_scale              , dirt_01_mag            , dirt_01_exp );
                 grass += Noise( px, 0, dirt_02_scale + grass_scale, dirt_02_mag + grass_mag, dirt_02_exp );
                 grass += dirt_height;
-
-            int sand   = Noise( px, 0, sand_01_scale, sand_01_mag, sand_01_exp );
-                sand  += Noise( px, 0, sand_02_scale, sand_02_mag, sand_02_exp );
-                sand  += sand_height;
-
+     
             for ( int py = 0; py < blocks.GetLength( 1 ); py++ )                                                    // Loop will make stone a certain height
             {
                 #region Description [Dirt spots, caves etc.]
@@ -205,28 +184,11 @@ public class script_PolygonGenerator : MonoBehaviour
                 the size of the caves that was increased by the scale. 
                 */
                 #endregion
-
-                if ( py < stone )
-                {
-                    blocks[ px, py ] = 1;
-
-                    if ( Noise( px, py            , spot_sandScale, spot_sandMag, spot_sandExp ) > spotSize )
-                    {
-                        blocks[ px, py ] = 4;   // block = sand
-                    }
-                    if ( Noise( px, py            , spot_dirtScale, spot_dirtMag, spot_dirtExp ) > spotSize )       // The next three lines make dirt spots in random places
-                    {
-                        blocks[ px, py ] = 2;   // block = Dirt
-                    }
-                    if ( Noise( px, py * spotWidth, spot_caveScale, spot_caveMag, spot_caveExp ) > spotSize )       // The next three lines remove dirt and rock to make caves in certain places
-                    { 
-                        blocks[ px, py ] = 0;   // block = air
-                    }
-                }
-                else if ( py < dirt )
+    
+                if ( py < dirt )
                 {
                     blocks[ px, py ] = 2;       // block = Dirt
-
+       
                     if ( Noise( px, py, spot_stoneScale, spot_stoneMag, spot_stoneExp ) > spotSize )
                     {
                         blocks[ px, py ] = 1;   // block = Stone
@@ -244,14 +206,213 @@ public class script_PolygonGenerator : MonoBehaviour
                 {
                     blocks[ px, py ] = 3;       // block = Grass
                 }
-                else if ( py < sand )
-                {
-                    blocks[ px, py ] = 4;       // block = sand
-                }
             }
         }
     }
     #endregion
+
+    void BlockOfType( Texture texture, int x, int y )
+    {
+        renderer.material.SetTexture("_MainTex", texture );
+
+        Vector2       tMid_fill_01          = new Vector2( 3, 4 );
+        Vector2       tMid_fill_02          = new Vector2( 4, 4 );
+        Vector2       tMid_fill_03          = new Vector2( 3, 3 );
+        Vector2       tMid_fill_04          = new Vector2( 4, 3 );
+
+        Vector2       tSide_Top             = new Vector2( 3, 5 );
+        Vector2       tSide_Bot             = new Vector2( 3, 2 );
+        Vector2       tSide_left            = new Vector2( 2, 3 );
+        Vector2       tSide_right           = new Vector2( 5, 3 );
+
+        Vector2       tBigCorner_01         = new Vector2( 2, 2 );
+        Vector2       tBigCorner_02         = new Vector2( 5, 2 );
+        Vector2       tBigCorner_03         = new Vector2( 2, 5 ); 
+        Vector2       tBigCorner_04         = new Vector2( 5, 5 );
+
+        Vector2       tSmallCorner_01       = new Vector2( 1, 1 );
+        Vector2       tSmallCorner_02       = new Vector2( 6, 1 );
+        Vector2       tSmallCorner_03       = new Vector2( 1, 6 );
+        Vector2       tSmallCorner_04       = new Vector2( 6, 6 );
+
+        Vector2       tHorizontalTube       = new Vector2( 0, 0 );
+        Vector2       tVerticalTube         = new Vector2( 0, 3 );
+        Vector2       tVerticalTubeTop      = new Vector2( 0, 4 );
+        Vector2       tDiagonal_01          = new Vector2( 0, 1 );
+        Vector2       tDiagonal_02          = new Vector2( 0, 2 );
+        Vector2       tFloatingBlock        = new Vector2( 0, 5 );
+
+        Vector2       tSingleTop_part_01    = new Vector2( 3, 6 );
+        Vector2       tSingleTop_part_02    = new Vector2( 4, 6 );
+
+        Vector2       tSingleBOT_part_01    = new Vector2( 3, 1 );
+        Vector2       tSingleBOT_part_02    = new Vector2( 4, 1 );
+
+        Vector2       tSingleLeft_part_01   = new Vector2( 1, 3 );
+        Vector2       tSingleLeft_part_02   = new Vector2( 1, 4 );
+
+        Vector2       tSingleRight_part_01  = new Vector2( 6, 3 );
+        Vector2       tSingleRight_part_02  = new Vector2( 6, 4 );
+
+        byte          air               = 0;
+
+        byte          top               = Block( x, y + 1 );
+        byte          bot               = Block( x, y - 1 );
+        byte          left              = Block( x - 1, y );
+        byte          right             = Block( x + 1, y );
+
+        byte          leftTOP           = Block( x - 1, y + 1 );
+        byte          rightTOP          = Block( x + 1, y + 1 );   
+
+        byte          leftBOT           = Block( x - 1, y - 1 );
+        byte          rightBOT          = Block( x + 1, y - 1 );
+
+
+        #region block_fill
+        if ( top != air && bot != air && left != air && right != air && leftTOP != air && rightTOP != air && leftBOT != air && rightBOT != air )
+        {
+            GenSquare( x, y, tMid_fill_01 );
+        }
+        #endregion
+        
+        #region block_top Only
+        if ( top == air && bot != air && left != air && right != air )
+        {
+            GenSquare( x, y, tSide_Top );
+        }
+        #endregion
+
+        #region block_bot Only
+        if ( bot == air && left != air && right != air && top != air )
+        {
+            GenSquare( x, y, tSide_Bot );
+        }
+        #endregion
+
+        #region block_left Only
+        if ( left == air && top != air && bot != air && right != air && rightTOP != air && rightBOT != air )
+        {
+            GenSquare( x, y, tSide_left );
+        }
+        #endregion
+
+        #region block_right Only
+        if ( right == air && top != air && bot != air && left != air && leftTOP != air )//&& leftBOT != air )
+        {
+            GenSquare( x, y, tSide_right);
+        }
+        #endregion
+
+        #region block_rightTOP [Inner- && Outer-corner]
+        if ( right == air && top == air && left != air && bot != air )
+        {
+            GenSquare( x, y, tBigCorner_04 );
+        }
+        if ( rightTOP == air && leftTOP != air && right != air && top != air && rightBOT != air && leftBOT != air)
+        {
+            GenSquare( x, y, tSmallCorner_04 );
+        }
+        #endregion
+
+        #region block_rightBOT [Inner- && Outer-corner]
+        if ( right == air && bot == air && top != air && left != air )
+        {
+            GenSquare( x, y, tBigCorner_02);
+        }
+        if ( rightBOT == air && leftBOT != air && right != air && bot != air && rightTOP != air && leftTOP != air )
+        {
+            GenSquare( x, y, tSmallCorner_02 );
+        }
+        #endregion
+
+        #region block_leftTOP [Inner- && Outer-corner]
+        if ( left == air && top == air && right != air  && bot != air )
+        {
+            GenSquare( x, y, tBigCorner_03 );
+        }
+        if ( leftTOP == air && rightTOP != air && left != air && top != air && leftBOT != air && rightBOT != air )
+        {
+            GenSquare( x, y, tSmallCorner_03);
+        }
+        #endregion
+
+        #region block_leftBOT [Inner- && Outer-corner]
+        if ( left == air && bot == air && top != air && right != air)
+        {
+            GenSquare( x, y, tBigCorner_01);
+        }
+        if ( leftBOT == air && rightBOT != air && left != air && bot != air && leftTOP != air && rightTOP != air )
+        {
+            GenSquare( x, y, tSmallCorner_01 );
+        }
+        #endregion
+
+        #region block special conditions
+        if ( leftTOP == air && rightTOP == air && top != air && left != air && right != air )   // Top
+        {
+            GenSquare( x, y, tSingleTop_part_01 ); // Top
+        }
+        if ( top == air && left == air && right == air ) 
+        {
+            GenSquare( x, y, tSingleTop_part_02 ); // Top start
+        }
+
+        if ( leftBOT == air && rightBOT == air && bot != air && left == air && right == air )   
+        {
+            GenSquare( x, y, tSingleBOT_part_01 ); // Top
+        }
+        if ( bot == air && leftBOT == air && rightBOT == air && left == air && right == air )
+        {
+            GenSquare( x, y, tSingleBOT_part_02 ); // Top start
+        }
+           
+        if ( left == air && bot == air && top == air )
+        {
+            GenSquare( x, y, tSingleLeft_part_01 );
+        }
+        if ( left != air && bot != air && top != air && leftTOP == air && leftBOT == air )
+        {
+            GenSquare( x, y, tSingleLeft_part_02 ); 
+        }
+
+        if ( right == air && bot == air && top == air )
+        {
+            GenSquare( x, y, tSingleRight_part_01 );
+        }
+        if ( right != air && bot != air && top != air && rightTOP == air && rightBOT == air )
+        {
+            GenSquare( x, y, tSingleRight_part_02 ); 
+        }
+
+        if ( leftBOT == air && rightBOT == air && left != air && right != air && bot != air && top != air && leftTOP != air && rightTOP != air )
+        {
+            GenSquare( x, y, tVerticalTubeTop );
+        }
+
+        if ( top == air && bot == air && left != air && right != air )
+        {
+            GenSquare( x, y, tHorizontalTube ); 
+        }
+        if ( right == air && top != air && bot != air && left == air )
+        {
+            GenSquare( x, y, tVerticalTube );
+        }
+
+        if ( leftTOP == air && rightTOP != air && left != air && top != air && leftBOT != air && rightBOT == air )
+        {
+            GenSquare( x, y, tDiagonal_01 );
+        }
+        if ( leftBOT == air && left != air && bot != air && leftTOP != air && rightTOP == air && rightBOT != air )
+        {
+            GenSquare( x, y, tDiagonal_02 );
+        }
+
+        if ( top == air && bot == air && left == air && right == air && leftTOP == air && rightTOP == air && leftBOT == air && rightBOT == air )
+        {    
+            GenSquare( x, y, tFloatingBlock );
+        }
+        #endregion
+    }
 
     #region function UpdateMesh
     void UpdateMesh()
@@ -282,23 +443,23 @@ public class script_PolygonGenerator : MonoBehaviour
     #region function GenSquare
     void GenSquare( int x, int y, Vector2 texture )
     {
-        newVertices.Add( new Vector3( x    , y    , 0 ) );                           // These lines defines the corners of a square
-        newVertices.Add( new Vector3( x + 1, y    , 0 ) );
+        
+        newVertices.Add( new Vector3( x, y, 0 ) );                           // These lines defines the corners of a square
+        newVertices.Add( new Vector3( x + 1, y, 0 ) );
         newVertices.Add( new Vector3( x + 1, y - 1, 0 ) );
-        newVertices.Add( new Vector3( x    , y - 1, 0 ) );
-
-
+        newVertices.Add( new Vector3( x, y - 1, 0 ) );
+ 
         newTriangles.Add(   squareCount * 4 );                                       // We define the triangles. Because without them all we have is points in space, we have to show how those points are connected and we connect them in triangles.
         newTriangles.Add( ( squareCount * 4 ) + 1 );                                 // What we do is add (squareCount*4) to each number we .Add() to newTriangles. 
         newTriangles.Add( ( squareCount * 4 ) + 3 );
         newTriangles.Add( ( squareCount * 4 ) + 1 );
         newTriangles.Add( ( squareCount * 4 ) + 2 );
         newTriangles.Add( ( squareCount * 4 ) + 3 );
-
-        newUV.Add( new Vector2( tUnit * texture.x        , tUnit * texture.y + tUnit ) );
+   
+        newUV.Add( new Vector2( tUnit * texture.x, tUnit * texture.y + tUnit ) );
         newUV.Add( new Vector2( tUnit * texture.x + tUnit, tUnit * texture.y + tUnit ) );
-        newUV.Add( new Vector2( tUnit * texture.x + tUnit, tUnit * texture.y         ) );
-        newUV.Add( new Vector2( tUnit * texture.x        , tUnit * texture.y         ) );
+        newUV.Add( new Vector2( tUnit * texture.x + tUnit, tUnit * texture.y ) );
+        newUV.Add( new Vector2( tUnit * texture.x, tUnit * texture.y ) );
 
         squareCount++;
     }
@@ -382,7 +543,7 @@ public class script_PolygonGenerator : MonoBehaviour
         That's a lot more than we need so we need a way to only make these colliders when they face an empty block.
         For that, this function checks the contents of a block.
         
-        The function checks if the block you're checking is within the array's boundaries, if not it returns 1 (Solid rock) otherwise it returns the block's value.
+        The function checks if the block you're checking is within the array's boundaries, if not it returns 2 (Solid dirt) otherwise it returns the block's value.
         This means that we can use this places where we're not sure that the block we're checking is within the level size.
         Use this in the collider function.
         */
@@ -390,7 +551,7 @@ public class script_PolygonGenerator : MonoBehaviour
 
         if ( x == -1 || x == blocks.GetLength( 0 ) || y == -1 || y == blocks.GetLength( 1 ) )
         {
-            return ( byte ) 1;
+            return ( byte ) 2;
         }
         return blocks[ x, y ];
     }
