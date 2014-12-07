@@ -12,11 +12,8 @@ public class script_PolygonGenerator : MonoBehaviour
     public  List<Vector2> newUV          = new List<Vector2>();                     // The UV list is unimportant right now but it tells Unity how the texture is aligned on each polygon
 
     private Mesh          mesh;                                                     // A mesh is made up of the vertices, triangles and UVs we are going to define, after we make them up we'll save them as this mesh
-    private float         tUnit          = 0.125f;                                   // tUnit is the fraction of space 1 tile takes up out of the width of the texture. ## In this case it's 1/4 or 0.25 ## 
-
-    public  Texture       tDirt;
-    public  Texture       tStone;
-
+    private float         tUnit          = 0.015625f;                               // tUnit is the fraction of space 1 tile takes up out of the width of the texture. ## In this case it's 1/4 or 0.25 ## 
+                                                                                    // Texture 2048x2048, tUnit = 0.125f;, Texture 4096x4096, tUnity = 0.015625f;
     private int           squareCount;
     public byte[,]        blocks;                                                   // A 2d array to store block information so add a 2d byte array 
                                                                                     // A byte array is an easy choice for level information. It supports numbers 0-255 so that's a lot of blocks and it saves us the hassle of using enumerators. 
@@ -27,6 +24,7 @@ public class script_PolygonGenerator : MonoBehaviour
     private MeshCollider  col;
 
     public  bool          update         = false;
+
 
     void Start () 
     {
@@ -47,10 +45,10 @@ public class script_PolygonGenerator : MonoBehaviour
             update = false;
         }
         
-        //GenTerrain();
-        //BuildMesh();
-        //UpdateMesh();
-        
+        GenTerrain();
+        BuildMesh();
+        UpdateMesh();
+
     }
 
 
@@ -72,24 +70,25 @@ public class script_PolygonGenerator : MonoBehaviour
     }
     #endregion
 
+
     void GenerateBlocks(int px, int py)
     {
         switch ( blocks[ px, py ] )
         { 
             case 1:
-                BlockOfType( tStone, px, py );
+                BlockOfType( px, py, 1, 0 );    // Stone
                 break;
 
             case 2:
-                BlockOfType( tDirt, px, py );
+                BlockOfType( px, py, 0, 0 );    // Dirt
                 break;
             
             case 3:
-                BlockOfType( tDirt, px, py );  
+                BlockOfType( px, py, 0, 0 );    // Grass ( 2, 0 )
                 break;
 
             case 4:
-                BlockOfType( tDirt, px, py );  
+                BlockOfType( px, py, 3, 0 );    // Sand
                 break;
 
             default:
@@ -211,10 +210,9 @@ public class script_PolygonGenerator : MonoBehaviour
     }
     #endregion
 
-    void BlockOfType( Texture texture, int x, int y )
+    #region BlockOfType [Texture conditions]
+    void BlockOfType( int x, int y, float tOffsetX, float tOffsetY )
     {
-        renderer.material.SetTexture("_MainTex", texture );
-
         Vector2       tMid_fill_01          = new Vector2( 3, 4 );
         Vector2       tMid_fill_02          = new Vector2( 4, 4 );
         Vector2       tMid_fill_03          = new Vector2( 3, 3 );
@@ -266,153 +264,164 @@ public class script_PolygonGenerator : MonoBehaviour
 
         byte          leftBOT           = Block( x - 1, y - 1 );
         byte          rightBOT          = Block( x + 1, y - 1 );
-
-
+        /*
+        byte          dirt                  = blocks[ 0, 0 ];
+        byte          stone                 = blocks[ 1, 1 ];
+        byte          grass                 = blocks[ 2, 2 ];
+        byte          sand                  = blocks[ 4, 4 ];
+    */
         #region block_fill
         if ( top != air && bot != air && left != air && right != air && leftTOP != air && rightTOP != air && leftBOT != air && rightBOT != air )
         {
-            GenSquare( x, y, tMid_fill_01 );
+            GenSquare( x, y, tMid_fill_01, tOffsetX, tOffsetY );
+            /*
+            if ( left == stone )
+            {
+                GenSquare( x, y, tMid_fill_02, tOffsetX, tOffsetY );
+            }*/
         }
         #endregion
         
         #region block_top Only
         if ( top == air && bot != air && left != air && right != air )
         {
-            GenSquare( x, y, tSide_Top );
+            GenSquare( x, y, tSide_Top, tOffsetX, tOffsetY );
         }
         #endregion
 
         #region block_bot Only
         if ( bot == air && left != air && right != air && top != air )
         {
-            GenSquare( x, y, tSide_Bot );
+            GenSquare( x, y, tSide_Bot, tOffsetX, tOffsetY );
         }
         #endregion
 
         #region block_left Only
         if ( left == air && top != air && bot != air && right != air && rightTOP != air && rightBOT != air )
         {
-            GenSquare( x, y, tSide_left );
+            GenSquare( x, y, tSide_left, tOffsetX, tOffsetY );
         }
         #endregion
 
         #region block_right Only
         if ( right == air && top != air && bot != air && left != air && leftTOP != air )//&& leftBOT != air )
         {
-            GenSquare( x, y, tSide_right);
+            GenSquare( x, y, tSide_right, tOffsetX, tOffsetY );
         }
         #endregion
 
         #region block_rightTOP [Inner- && Outer-corner]
         if ( right == air && top == air && left != air && bot != air )
         {
-            GenSquare( x, y, tBigCorner_04 );
+            GenSquare( x, y, tBigCorner_04, tOffsetX, tOffsetY );
         }
         if ( rightTOP == air && leftTOP != air && right != air && top != air && rightBOT != air && leftBOT != air)
         {
-            GenSquare( x, y, tSmallCorner_04 );
+            GenSquare( x, y, tSmallCorner_04, tOffsetX, tOffsetY );
         }
         #endregion
 
         #region block_rightBOT [Inner- && Outer-corner]
         if ( right == air && bot == air && top != air && left != air )
         {
-            GenSquare( x, y, tBigCorner_02);
+            GenSquare( x, y, tBigCorner_02, tOffsetX, tOffsetY );
         }
         if ( rightBOT == air && leftBOT != air && right != air && bot != air && rightTOP != air && leftTOP != air )
         {
-            GenSquare( x, y, tSmallCorner_02 );
+            GenSquare( x, y, tSmallCorner_02, tOffsetX, tOffsetY );
         }
         #endregion
 
         #region block_leftTOP [Inner- && Outer-corner]
         if ( left == air && top == air && right != air  && bot != air )
         {
-            GenSquare( x, y, tBigCorner_03 );
+            GenSquare( x, y, tBigCorner_03, tOffsetX, tOffsetY );
         }
         if ( leftTOP == air && rightTOP != air && left != air && top != air && leftBOT != air && rightBOT != air )
         {
-            GenSquare( x, y, tSmallCorner_03);
+            GenSquare( x, y, tSmallCorner_03, tOffsetX, tOffsetY );
         }
         #endregion
 
         #region block_leftBOT [Inner- && Outer-corner]
         if ( left == air && bot == air && top != air && right != air)
         {
-            GenSquare( x, y, tBigCorner_01);
+            GenSquare( x, y, tBigCorner_01, tOffsetX, tOffsetY );
         }
         if ( leftBOT == air && rightBOT != air && left != air && bot != air && leftTOP != air && rightTOP != air )
         {
-            GenSquare( x, y, tSmallCorner_01 );
+            GenSquare( x, y, tSmallCorner_01, tOffsetX, tOffsetY );
         }
         #endregion
 
         #region block special conditions
         if ( leftTOP == air && rightTOP == air && top != air && left != air && right != air )   // Top
         {
-            GenSquare( x, y, tSingleTop_part_01 ); // Top
+            GenSquare( x, y, tSingleTop_part_01, tOffsetX, tOffsetY ); // Top
         }
         if ( top == air && left == air && right == air ) 
         {
-            GenSquare( x, y, tSingleTop_part_02 ); // Top start
+            GenSquare( x, y, tSingleTop_part_02, tOffsetX, tOffsetY ); // Top start
         }
 
         if ( leftBOT == air && rightBOT == air && bot != air && left == air && right == air )   
         {
-            GenSquare( x, y, tSingleBOT_part_01 ); // Top
+            GenSquare( x, y, tSingleBOT_part_01, tOffsetX, tOffsetY ); // Top
         }
         if ( bot == air && leftBOT == air && rightBOT == air && left == air && right == air )
         {
-            GenSquare( x, y, tSingleBOT_part_02 ); // Top start
+            GenSquare( x, y, tSingleBOT_part_02, tOffsetX, tOffsetY ); // Top start
         }
            
         if ( left == air && bot == air && top == air )
         {
-            GenSquare( x, y, tSingleLeft_part_01 );
+            GenSquare( x, y, tSingleLeft_part_01, tOffsetX, tOffsetY );
         }
         if ( left != air && bot != air && top != air && leftTOP == air && leftBOT == air )
         {
-            GenSquare( x, y, tSingleLeft_part_02 ); 
+            GenSquare( x, y, tSingleLeft_part_02, tOffsetX, tOffsetY ); 
         }
 
         if ( right == air && bot == air && top == air )
         {
-            GenSquare( x, y, tSingleRight_part_01 );
+            GenSquare( x, y, tSingleRight_part_01, tOffsetX, tOffsetY );
         }
         if ( right != air && bot != air && top != air && rightTOP == air && rightBOT == air )
         {
-            GenSquare( x, y, tSingleRight_part_02 ); 
+            GenSquare( x, y, tSingleRight_part_02, tOffsetX, tOffsetY ); 
         }
 
         if ( leftBOT == air && rightBOT == air && left != air && right != air && bot != air && top != air && leftTOP != air && rightTOP != air )
         {
-            GenSquare( x, y, tVerticalTubeTop );
+            GenSquare( x, y, tVerticalTubeTop, tOffsetX, tOffsetY );
         }
 
         if ( top == air && bot == air && left != air && right != air )
         {
-            GenSquare( x, y, tHorizontalTube ); 
+            GenSquare( x, y, tHorizontalTube, tOffsetX, tOffsetY ); 
         }
         if ( right == air && top != air && bot != air && left == air )
         {
-            GenSquare( x, y, tVerticalTube );
+            GenSquare( x, y, tVerticalTube, tOffsetX, tOffsetY );
         }
 
         if ( leftTOP == air && rightTOP != air && left != air && top != air && leftBOT != air && rightBOT == air )
         {
-            GenSquare( x, y, tDiagonal_01 );
+            GenSquare( x, y, tDiagonal_01, tOffsetX, tOffsetY );
         }
         if ( leftBOT == air && left != air && bot != air && leftTOP != air && rightTOP == air && rightBOT != air )
         {
-            GenSquare( x, y, tDiagonal_02 );
+            GenSquare( x, y, tDiagonal_02, tOffsetX, tOffsetY );
         }
 
         if ( top == air && bot == air && left == air && right == air && leftTOP == air && rightTOP == air && leftBOT == air && rightBOT == air )
-        {    
-            GenSquare( x, y, tFloatingBlock );
+        {
+            GenSquare( x, y, tFloatingBlock, tOffsetX, tOffsetY );
         }
         #endregion
+
     }
+    #endregion
 
     #region function UpdateMesh
     void UpdateMesh()
@@ -441,7 +450,7 @@ public class script_PolygonGenerator : MonoBehaviour
     #endregion
 
     #region function GenSquare
-    void GenSquare( int x, int y, Vector2 texture )
+    void GenSquare( int x, int y, Vector2 texture, float tOffsetX, float tOffsetY )
     {
         
         newVertices.Add( new Vector3( x, y, 0 ) );                           // These lines defines the corners of a square
@@ -455,15 +464,22 @@ public class script_PolygonGenerator : MonoBehaviour
         newTriangles.Add( ( squareCount * 4 ) + 1 );
         newTriangles.Add( ( squareCount * 4 ) + 2 );
         newTriangles.Add( ( squareCount * 4 ) + 3 );
-   
+        /*
         newUV.Add( new Vector2( tUnit * texture.x, tUnit * texture.y + tUnit ) );
         newUV.Add( new Vector2( tUnit * texture.x + tUnit, tUnit * texture.y + tUnit ) );
         newUV.Add( new Vector2( tUnit * texture.x + tUnit, tUnit * texture.y ) );
         newUV.Add( new Vector2( tUnit * texture.x, tUnit * texture.y ) );
+        */
 
+        newUV.Add( new Vector2( ( tOffsetX * 0.125f ) + ( tUnit * texture.x         ), ( tOffsetY * 0.125f ) + ( tUnit * texture.y + tUnit ) ) );
+        newUV.Add( new Vector2( ( tOffsetX * 0.125f ) + ( tUnit * texture.x + tUnit ), ( tOffsetY * 0.125f ) + ( tUnit * texture.y + tUnit ) ) );
+        newUV.Add( new Vector2( ( tOffsetX * 0.125f ) + ( tUnit * texture.x + tUnit ), ( tOffsetY * 0.125f ) + ( tUnit * texture.y ) ) );
+        newUV.Add( new Vector2( ( tOffsetX * 0.125f ) + ( tUnit * texture.x         ), ( tOffsetY * 0.125f ) + ( tUnit * texture.y ) ) );
+ 
         squareCount++;
     }
     #endregion
+
 
     #region function GenCollider
     void GenCollider( int x, int y )

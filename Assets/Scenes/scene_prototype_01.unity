@@ -173,7 +173,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1030074012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -234,8 +234,6 @@ MonoBehaviour:
   newVertices: []
   newTriangles: 
   newUV: []
-  tDirt: {fileID: 2800000, guid: cb739f15de710f2468d49decaef8e087, type: 3}
-  tStone: {fileID: 2800000, guid: f5a681162f97b204c9716c02329658c8, type: 3}
   colVertices: []
   colTriangles: 
   update: 0
@@ -289,7 +287,7 @@ Renderer:
   m_LightmapIndex: 255
   m_LightmapTilingOffset: {x: 1, y: 1, z: 0, w: 0}
   m_Materials:
-  - {fileID: 2100000, guid: 9c5a5b613f38cfa47900109972364815, type: 2}
+  - {fileID: 2100000, guid: 12cf8a1e93299c74d85ee4f8473ce23b, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0
@@ -332,7 +330,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1488597475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -371,7 +369,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1604792670
 Transform:
   m_ObjectHideFlags: 0
@@ -379,7 +377,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1604792669}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 131, y: 138, z: 10}
+  m_LocalPosition: {x: 0, y: 0, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -399,7 +397,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1702844729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -480,11 +478,19 @@ Prefab:
     - target: {fileID: 11400000, guid: 70bc2e23745ec2f46b23533678657168, type: 2}
       propertyPath: tDirt
       value: 
-      objectReference: {fileID: 2800000, guid: cb739f15de710f2468d49decaef8e087, type: 3}
+      objectReference: {fileID: 2800000, guid: 22442e87718367445be9465a90dc2640, type: 3}
     - target: {fileID: 11400000, guid: 70bc2e23745ec2f46b23533678657168, type: 2}
       propertyPath: tStone
       value: 
-      objectReference: {fileID: 2800000, guid: f5a681162f97b204c9716c02329658c8, type: 3}
+      objectReference: {fileID: 2800000, guid: 1d9913c2817858b4aa24f73894463c8d, type: 3}
+    - target: {fileID: 2300000, guid: 70bc2e23745ec2f46b23533678657168, type: 2}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 12cf8a1e93299c74d85ee4f8473ce23b, type: 2}
+    - target: {fileID: 11400000, guid: 70bc2e23745ec2f46b23533678657168, type: 2}
+      propertyPath: mainTexture
+      value: 
+      objectReference: {fileID: 2800000, guid: 22442e87718367445be9465a90dc2640, type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 70bc2e23745ec2f46b23533678657168, type: 2}
   m_RootGameObject: {fileID: 1420113723}
