@@ -28,8 +28,9 @@ public class script_Chunk : MonoBehaviour
     public const byte       stone           = 1;
     public const byte       dirt            = 2;
     public const byte       grass           = 3;
-    public const byte       sand            = 4; 
+    public const byte       sand            = 4;
 
+    public bool             update;
 	
     void Start () 
     {
@@ -38,11 +39,20 @@ public class script_Chunk : MonoBehaviour
         col         = GetComponent<MeshCollider>();
         chunkSize   = world.chunkSize;
 
-        BuildMesh();   
+        BuildMesh();
 	}
 
+    void LateUpdate()
+    {
+        if ( update )
+        {
+            BuildMesh();
+            update = false;
+        }
+    }
 
-    void BuildMesh()    
+
+    public void BuildMesh()    
     {
         for ( int x = 0; x < chunkSize; x++ )
         {
@@ -64,7 +74,7 @@ public class script_Chunk : MonoBehaviour
         return world.Block( x + chunkX, y + chunkY );
     }
     
-    void UpdateMesh()
+    public void UpdateMesh()
     {
         mesh.Clear();                                                               // Then last of all we clear anything in the mesh to begin with, we set the mesh's vertices to ours
         mesh.vertices       = newVertices.ToArray();                                // ... (But we have to convert the list to an array with the .ToArray() command) and set the mesh's triangles to ours.
@@ -103,6 +113,8 @@ public class script_Chunk : MonoBehaviour
 
             ColliderTriangles();
             colCount++;
+
+    
         }
         #endregion
 
@@ -116,6 +128,8 @@ public class script_Chunk : MonoBehaviour
 
             ColliderTriangles();
             colCount++;
+
+
         }
         #endregion
 
@@ -129,6 +143,8 @@ public class script_Chunk : MonoBehaviour
 
             ColliderTriangles();
             colCount++;
+
+ 
         }
         #endregion
 
@@ -142,6 +158,14 @@ public class script_Chunk : MonoBehaviour
 
             ColliderTriangles();
             colCount++;
+            /*
+            colVertices.Add( new Vector3( x    , y    , 0 ) );
+            colVertices.Add( new Vector3( x    , y - 1, 0 ) );
+            colVertices.Add( new Vector3( x + 1, y - 1, 0 ) );
+            colVertices.Add( new Vector3( x + 1, y    , 0 ) );
+
+            ColliderTriangles();
+            colCount++;*/
         }
         #endregion
     }
@@ -163,7 +187,7 @@ public class script_Chunk : MonoBehaviour
             case stone:
                 GenBlockBorder( x, y, air, 1, 0 );
                 break;
-
+                
             case dirt:
                 GenBlockBorder( x, y, air, 0, 0 );
                 break;

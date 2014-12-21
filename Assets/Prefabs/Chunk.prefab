@@ -89,6 +89,7 @@ MonoBehaviour:
   chunkX: 0
   chunkY: 0
   chunkZ: 0
+  update: 0
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

@@ -47,6 +47,7 @@ public class script_destroyAtPoint : MonoBehaviour
         if ( collision )
         {
             //tScript.update = true;
+            //world.update = true;
         }
 	}
 
@@ -59,9 +60,10 @@ public class script_destroyAtPoint : MonoBehaviour
         if ( x < world.chunks.GetLength( 0 ) && y < world.chunks.GetLength( 1 ) && x >= 0 && y >= 0 )
         {
             //if ( tScript.blocks[ x, y ] != 0 )
-            if ( world.Block( x, y ) != 0 )
+            if ( world.data[ x, y ] != 0 )
             {
                 //tScript.blocks [ x, y ] = 0;
+                world.data[ x, y ] = 0;
                 return true;
             }
         }

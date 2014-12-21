@@ -17,27 +17,19 @@ public class script_World : MonoBehaviour
     #endregion
 
     public GameObject       chunk;
-    public GameObject[,]    chunks;
-    
+    public script_Chunk[,]  chunks;
+
     public int              chunkSize       =   16;
 
     public byte[,]          data;
     public int              worldX          =   16;
     public int              worldY          =   16;
 
-
-
     void Start () 
     {
-	    //data = new byte[ worldX, worldY ];
         GenWorld();
 
         StartCoroutine( GenChunks() );
-    }
-
-    void Update()
-    {
-        //GenWorld();
     }
 
     #region variables
@@ -154,7 +146,7 @@ public class script_World : MonoBehaviour
 
     IEnumerator GenChunks()
     {
-        chunks = new GameObject[ Mathf.FloorToInt( worldX / chunkSize ), Mathf.FloorToInt( worldY / chunkSize ) ];
+        chunks = new script_Chunk[ Mathf.FloorToInt( worldX / chunkSize ), Mathf.FloorToInt( worldY / chunkSize ) ];
 
         for ( int x = 0; x < chunks.GetLength( 0 ); x++ )
         {
@@ -162,16 +154,15 @@ public class script_World : MonoBehaviour
             {
                 yield return new WaitForSeconds( 0.0001f );
 
-                chunks[ x, y ] = Instantiate( chunk, new Vector2( x * chunkSize, y * chunkSize ), new Quaternion( 0, 0, 0, 0 ) ) as GameObject;
+                GameObject newChunk         = Instantiate( chunk, new Vector3( x * chunkSize - 0.5f, y * chunkSize + 0.5f ), new Quaternion( 0, 0, 0, 0 ) ) as GameObject;
 
-                chunks[ x, y ].transform.parent = transform;
+                newChunk.transform.parent   = transform;
 
-                script_Chunk newChunkScript = chunks[ x, y ].GetComponent<script_Chunk>() as script_Chunk;
-
-                newChunkScript.worldGO      = gameObject;
-                newChunkScript.chunkSize    = chunkSize;
-                newChunkScript.chunkX       = x * chunkSize;
-                newChunkScript.chunkY       = y * chunkSize;
+                chunks[ x, y ]              = newChunk.GetComponent<script_Chunk>() as script_Chunk;
+                chunks[ x, y ].worldGO      = gameObject;
+                chunks[ x, y ].chunkSize    = chunkSize;
+                chunks[ x, y ].chunkX       = x * chunkSize;
+                chunks[ x, y ].chunkY       = y * chunkSize;
             }
         }
     }
